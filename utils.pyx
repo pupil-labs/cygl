@@ -1,5 +1,6 @@
 cimport cgl as gl
 
+
 cpdef hello(int maxx):
     gl.glLineWidth(1)
     gl.glColor4f(0.,0.,0.,.5)
