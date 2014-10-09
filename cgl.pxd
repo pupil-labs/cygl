@@ -1962,4 +1962,93 @@ cdef extern from "gl.h":
 
     ctypedef void (*PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC)(GLenum, GLeglImageOES)
 
+cdef extern from "glext.h":
 
+    # inclomplete glext defines. This is hacky and should be done properly.
+
+    enum: GL_INVALID_FRAMEBUFFER_OPERATION
+    enum: GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING
+    enum: GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE
+    enum: GL_FRAMEBUFFER_DEFAULT
+    enum: GL_FRAMEBUFFER_UNDEFINED
+    enum: GL_DEPTH_STENCIL_ATTACHMENT
+    enum: GL_MAX_RENDERBUFFER_SIZE
+    enum: GL_DEPTH_STENCIL
+    enum: GL_UNSIGNED_INT_24_8
+    enum: GL_DEPTH24_STENCIL8
+    enum: GL_TEXTURE_STENCIL_SIZE
+    enum: GL_TEXTURE_RED_TYPE
+    enum: GL_TEXTURE_GREEN_TYPE
+    enum: GL_TEXTURE_BLUE_TYPE
+    enum: GL_TEXTURE_ALPHA_TYPE
+    enum: GL_TEXTURE_DEPTH_TYPE
+    enum: GL_UNSIGNED_NORMALIZED
+    enum: GL_FRAMEBUFFER_BINDING
+    enum: GL_DRAW_FRAMEBUFFER_BINDING
+    enum: GL_RENDERBUFFER_BINDING
+    enum: GL_READ_FRAMEBUFFER
+    enum: GL_DRAW_FRAMEBUFFER
+    enum: GL_READ_FRAMEBUFFER_BINDING
+    enum: GL_RENDERBUFFER_SAMPLES
+    enum: GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME
+    enum: GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL
+    enum: GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE
+    enum: GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER
+    enum: GL_FRAMEBUFFER_COMPLETE
+    enum: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
+    enum: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
+    enum: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+    enum: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
+    enum: GL_FRAMEBUFFER_UNSUPPORTED
+    enum: GL_MAX_COLOR_ATTACHMENTS
+    enum: GL_COLOR_ATTACHMENT0
+    enum: GL_COLOR_ATTACHMENT1
+    enum: GL_COLOR_ATTACHMENT2
+    enum: GL_COLOR_ATTACHMENT3
+    enum: GL_COLOR_ATTACHMENT4
+    enum: GL_COLOR_ATTACHMENT5
+    enum: GL_COLOR_ATTACHMENT6
+    enum: GL_COLOR_ATTACHMENT7
+    enum: GL_COLOR_ATTACHMENT8
+    enum: GL_COLOR_ATTACHMENT9
+    enum: GL_COLOR_ATTACHMENT10
+    enum: GL_COLOR_ATTACHMENT11
+    enum: GL_COLOR_ATTACHMENT12
+    enum: GL_COLOR_ATTACHMENT13
+    enum: GL_COLOR_ATTACHMENT14
+    enum: GL_COLOR_ATTACHMENT15
+    enum: GL_DEPTH_ATTACHMENT
+    enum: GL_STENCIL_ATTACHMENT
+    enum: GL_FRAMEBUFFER
+    enum: GL_RENDERBUFFER
+    enum: GL_RENDERBUFFER_WIDTH
+    enum: GL_RENDERBUFFER_HEIGHT
+    enum: GL_RENDERBUFFER_INTERNAL_FORMAT
+    enum: GL_STENCIL_INDEX1
+    enum: GL_STENCIL_INDEX4
+    enum: GL_STENCIL_INDEX8
+    enum: GL_STENCIL_INDEX16
+    enum: GL_RENDERBUFFER_RED_SIZE
+    enum: GL_RENDERBUFFER_GREEN_SIZE
+    enum: GL_RENDERBUFFER_BLUE_SIZE
+    enum: GL_RENDERBUFFER_ALPHA_SIZE
+    enum: GL_RENDERBUFFER_DEPTH_SIZE
+    enum: GL_RENDERBUFFER_STENCIL_SIZE
+    enum: GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+    enum: GL_MAX_SAMPLES
+
+    void glBindFramebuffer(GLenum target, GLuint framebuffer)
+    void glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers)
+    void glGenFramebuffers(GLsizei n, GLuint *framebuffers)
+    GLenum glCheckFramebufferStatus(GLenum target)
+    void glFramebufferTexture1D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+    void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+    void glFramebufferTexture3D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset)
+    void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
