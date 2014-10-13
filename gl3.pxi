@@ -295,4 +295,3 @@ cdef extern from 'gl3.h':
 
 
 
-    void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)

@@ -91,7 +91,7 @@ cdef extern from 'glext.h':
 
 
     #blend fns
-    void glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
+    void glBlendFuncSeparate 'glBlendFuncSeparateEXT' (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 
 
     #shaders:
@@ -295,4 +295,3 @@ cdef extern from 'glext.h':
 
 
 
-    void glBlendFuncSeparate (GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
