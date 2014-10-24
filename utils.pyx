@@ -2,20 +2,9 @@ from cgl cimport *
 cimport shader
 
 
-cpdef hello(int maxx):
-    glLineWidth(1)
-    glColor4f(0.,0.,0.,.5)
-    glBegin(GL_LINES)
-    cdef int x
-    for x in range(maxx):
-        glVertex3f(x*3,500,0.0)
-        glVertex3f(0,0,0.0)
-    glEnd()
-
-
 
 simple_pt_shader = None
-cpdef draw_points(points,int size=20,object color=(1.,0.5,0.5,.5),float sharpness=0.8):
+cdef draw_points(object points,int size=20,object color=(1.,0.5,0.5,.5),float sharpness=0.8):
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
     if not simple_pt_shader:
 
