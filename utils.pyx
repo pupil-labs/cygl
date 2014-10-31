@@ -15,12 +15,11 @@ cpdef hello(int maxx):
 
 
 simple_pt_shader = None
-
 cpdef draw_points(points,int size=20,object color=(1.,0.5,0.5,.5),float sharpness=0.8):
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
     if not simple_pt_shader:
 
-        # we just draw single points, a VBO is much slower than this. But this is a little bit hacked.
+        # we just draw single points. But this is a little bit hacked.
         #someday we should replace all legacy fn with vbo's and shaders...
         # shader defines
         VERT_SHADER = """
@@ -59,27 +58,6 @@ cpdef draw_points(points,int size=20,object color=(1.,0.5,0.5,.5),float sharpnes
         glVertex3f(pt[0],pt[1],0)
     glEnd()
     simple_pt_shader.unbind()
-
-
-from cython cimport view
-
-cdef class Graph:
-    cdef int[::1] data
-    cdef int idx,d_len
-    cdef int x,y
-
-    def __cinit__(self,int data_points = 100):
-        self.data = view.array(shape=(data_points,), itemsize=sizeof(int), format="i")
-
-    def __init__(self,int data_points = 100):
-        pass
-
-    property pos:
-        def __get__(self):
-            return self.x,self.y
-
-        def __set__(self,val):
-            self.x,self.y = val
 
 
 
