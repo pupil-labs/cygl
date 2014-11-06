@@ -1,8 +1,8 @@
 IF UNAME_SYSNAME == "Windows":
-    include 'cgl_win.pxd'
+    include 'gl1_win.pxi'
 ELIF UNAME_SYSNAME == "Darwin":
-    include 'cgl_default.pxd'
+    include 'gl1.pxi'
     include 'gl3.pxi'
 ELIF UNAME_SYSNAME == "Linux":
-    include 'cgl_default.pxd'
+    include 'gl1.pxi'
     include 'glext.pxi'

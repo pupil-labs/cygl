@@ -1,4 +1,4 @@
-   # inclomplete glext defines. This is hacky and should be done properly.
+   # inclomplete  defines. This is hacky and should be done properly.
 
 cdef extern from 'glext.h':
     enum: GL_INVALID_FRAMEBUFFER_OPERATION
