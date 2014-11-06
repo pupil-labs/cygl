@@ -1,17 +1,23 @@
-import os, platform
 from distutils.core import setup
 from distutils.extension import Extension
+import platform
+
 from Cython.Build import cythonize
+
 
 if platform.system() == 'Darwin':
 	includes = ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
 	f = '-framework'
 	link_args = [f, 'OpenGL']
 	libs = []
+elif platform.system() == 'Windows':
+	includes = []
+	libs = ['OpenGL32']
+	link_args = []
 else:
-    includes = ['/usr/include/GL',]
-    libs = ['GL']
-    link_args = []
+	includes = ['/usr/include/GL',]
+	libs = ['GL']
+	link_args = []
 
 
 extensions = [
