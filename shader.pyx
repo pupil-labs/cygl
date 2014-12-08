@@ -1,4 +1,4 @@
-cimport cgl as gl
+cimport glew as gl
 
 cdef class Shader:
     ''' Base shader class. '''

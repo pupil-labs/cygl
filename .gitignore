@@ -1,6 +1,12 @@
+#genrated files:
+glew.pxd
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+
 
 # C extensions and cython build files
 *.so
