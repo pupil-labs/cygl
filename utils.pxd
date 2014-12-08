@@ -1,2 +1,3 @@
-cdef draw_points(object points,int size=*,object color=*,float sharpness=*)
 
+cpdef init()
+cpdef draw_points(points,int size=*,color=*,float sharpness=*)
