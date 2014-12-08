@@ -4,16 +4,20 @@ import platform
 
 from Cython.Build import cythonize
 
+from glew_pxd import generate_pxd
 
 if platform.system() == 'Darwin':
+	generate_pxd('/usr/local/Cellar/glew/1.10.0/include/GL/glew.h')
 	includes = []
 	link_args = []
 	libs = ['GLEW']
 elif platform.system() == 'Windows':
+	generate_pxd('path_to_glew.h')
 	includes = []
 	libs = ['GLEW32']
 	link_args = []
 else:
+	generate_pxd('/usr/include/GL/glew.h')
 	includes = []
 	libs = ['GLEW']
 	link_args = []

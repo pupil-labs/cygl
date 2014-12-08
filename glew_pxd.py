@@ -1,89 +1,96 @@
+'''
+Script taken from: https://github.com/orlp/pygrafix
+Appropriate Licence applies!
+'''
+
 import re
 import sys
+import os
+if __name__ == '__main__':
+    if len(sys.argv)<2:
+        raise Exception('Please supply path to glew.h')
+    generate_pxd(sys.argv[1])
 
-if len(sys.argv)<2:
-    raise Exception('Please supply path to glew.h')
+def generate_pxd(glew_header_loc,dest = ''):
+    with open(glew_header_loc, "r") as fin:
+        data = fin.read()
 
+    # cython doesn't support const
+    data =  re.sub(r"\bconst\b", "", data)
 
-with open(sys.argv[1], "r") as fin:
-    data = fin.read()
+    lines = data.split("\n")
 
-# cython doesn't support const
-data =  re.sub(r"\bconst\b", "", data)
+    handled_lines = set()
+    function_types = {}
+    export_functions = {}
+    function_defs = []
+    enums = []
 
-lines = data.split("\n")
+    # read in function types
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"typedef\s+([^(]+)\([^*]+\*\s*([a-zA-Z_][a-zA-Z0-9_]+)\)\s*(\(.+\))\s*;", line)[0]
+        except IndexError: continue
 
-handled_lines = set()
-function_types = {}
-export_functions = {}
-function_defs = []
-enums = []
+        function_types[result[1]] = (result[0].strip(), result[2])
+        handled_lines.add(linenr)
 
-# read in function types
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"typedef\s+([^(]+)\([^*]+\*\s*([a-zA-Z_][a-zA-Z0-9_]+)\)\s*(\(.+\))\s*;", line)[0]
-    except IndexError: continue
+    # read in exported functions
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"GLEW_FUN_EXPORT\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+([a-zA-Z_][a-zA-Z0-9_]+)", line)[0]
+        except IndexError: continue
 
-    function_types[result[1]] = (result[0].strip(), result[2])
-    handled_lines.add(linenr)
+        export_functions[result[1]] = result[0]
+        handled_lines.add(linenr)
 
-# read in exported functions
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"GLEW_FUN_EXPORT\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+([a-zA-Z_][a-zA-Z0-9_]+)", line)[0]
-    except IndexError: continue
+    # match exported functions with function types
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+GLEW_GET_FUN\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]+)\s*\)", line)[0]
+        except IndexError: continue
 
-    export_functions[result[1]] = result[0]
-    handled_lines.add(linenr)
+        export_func = export_functions[result[1]]
+        function_defs.append(function_types[export_func][0] + " " + result[0] + function_types[export_func][1])
+        handled_lines.add(linenr)
 
-# match exported functions with function types
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+GLEW_GET_FUN\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]+)\s*\)", line)[0]
-    except IndexError: continue
+    # add GLAPIENTRY functions
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"GLAPI\s+([a-zA-Z_][a-zA-Z0-9_]+)[^a-zA-Z_]+GLAPIENTRY[^a-zA-Z_]+([a-zA-Z_][a-zA-Z0-9_]+)\s*(\(.+\))\s*;", line)[0]
+        except IndexError: continue
 
-    export_func = export_functions[result[1]]
-    function_defs.append(function_types[export_func][0] + " " + result[0] + function_types[export_func][1])
-    handled_lines.add(linenr)
+        function_defs.append(" ".join(result))
+        handled_lines.add(linenr)
 
-# add GLAPIENTRY functions
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"GLAPI\s+([a-zA-Z_][a-zA-Z0-9_]+)[^a-zA-Z_]+GLAPIENTRY[^a-zA-Z_]+([a-zA-Z_][a-zA-Z0-9_]+)\s*(\(.+\))\s*;", line)[0]
-    except IndexError: continue
+    # read in numeric defines as enums
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+(?:(?:0x[0-9a-fA-F]+)|[0-9]+)", line)[0]
+        except IndexError: continue
 
-    function_defs.append(" ".join(result))
-    handled_lines.add(linenr)
+        enums.append(result)
+        handled_lines.add(linenr)
 
-# read in numeric defines as enums
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+(?:(?:0x[0-9a-fA-F]+)|[0-9]+)", line)[0]
-    except IndexError: continue
+    # read in GLEW vars as enums
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+GLEW_GET_VAR\(.+\)", line)[0]
+        except IndexError: continue
 
-    enums.append(result)
-    handled_lines.add(linenr)
+        enums.append(result)
+        handled_lines.add(linenr)
 
-# read in GLEW vars as enums
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"#define\s+([a-zA-Z_][a-zA-Z0-9_]+)\s+GLEW_GET_VAR\(.+\)", line)[0]
-    except IndexError: continue
+    # also accept GL to GL defines as enums
+    for linenr, line in enumerate(lines):
+        try:
+            result = re.findall(r"#define\s+(GL_[a-zA-Z0-9_]+)\s+GL_[a-zA-Z0-9_]+", line)[0]
+        except IndexError: continue
 
-    enums.append(result)
-    handled_lines.add(linenr)
+        enums.append(result)
+        handled_lines.add(linenr)
 
-# also accept GL to GL defines as enums
-for linenr, line in enumerate(lines):
-    try:
-        result = re.findall(r"#define\s+(GL_[a-zA-Z0-9_]+)\s+GL_[a-zA-Z0-9_]+", line)[0]
-    except IndexError: continue
-
-    enums.append(result)
-    handled_lines.add(linenr)
-
-pxdheader = """from libc.stdint cimport int64_t, uint64_t
+    pxdheader = """from libc.stdint cimport int64_t, uint64_t
 
 cdef extern from "include_glew.h":
     ctypedef struct _cl_context:
@@ -149,38 +156,38 @@ cdef extern from "include_glew.h":
 
 """
 
-with open("glew.pxd", "w") as fout:
-    data = pxdheader
+    with open(os.path.join(dest,"glew.pxd"), "w") as fout:
+        data = pxdheader
 
-    data += "    enum:\n"
-    data += "\n".join("        " + enum for enum in enums)
-    data += "\n\n"
+        data += "    enum:\n"
+        data += "\n".join("        " + enum for enum in enums)
+        data += "\n\n"
 
-    def mod_func(func):
-        keywords = ["and", "del", "for", "is", "raise", "assert", "elif", "from", "lambda", "return", "break", "else", "global", "not", "try", "class",
-                    "except", "if", "or", "while", "continue", "exec", "import", "pass", "yield", "def", "finally", "in", "print"]
+        def mod_func(func):
+            keywords = ["and", "del", "for", "is", "raise", "assert", "elif", "from", "lambda", "return", "break", "else", "global", "not", "try", "class",
+                        "except", "if", "or", "while", "continue", "exec", "import", "pass", "yield", "def", "finally", "in", "print"]
 
-        # beautify functions
-        func = re.sub(r"\s+", " ", func) # collapse whitespace
-        func = re.sub(r"\s*([()])\s*", r"\1", func) # no whitespace near brackets
-        func = re.sub(r"\s*,\s*", r", ", func) # only whitespace __after__ comma
-        func = re.sub(r"\s*(\*+)\s*", r" \1", func) # beautify pointers in functions
+            # beautify functions
+            func = re.sub(r"\s+", " ", func) # collapse whitespace
+            func = re.sub(r"\s*([()])\s*", r"\1", func) # no whitespace near brackets
+            func = re.sub(r"\s*,\s*", r", ", func) # only whitespace __after__ comma
+            func = re.sub(r"\s*(\*+)\s*", r" \1", func) # beautify pointers in functions
 
-        # cython doesn't support (void), need to do () for no arguments instead
-        func = re.sub(r"\(void\)", "()", func)
+            # cython doesn't support (void), need to do () for no arguments instead
+            func = re.sub(r"\(void\)", "()", func)
 
-        # keywords...
-        for keyword in keywords:
-            func = re.sub(r"\b%s\b" % keyword, keyword + "_", func)
+            # keywords...
+            for keyword in keywords:
+                func = re.sub(r"\b%s\b" % keyword, keyword + "_", func)
 
-        return func
+            return func
 
-    data += "\n".join("    " + mod_func(func) for func in function_defs)
+        data += "\n".join("    " + mod_func(func) for func in function_defs)
 
-    fout.write(data)
+        fout.write(data)
 
 
-with open("unhandled_glew.h", "w") as fout:
-    data = "\n".join(lines[linenr] for linenr in range(len(lines)) if not linenr in handled_lines)
-    data = re.sub("\n\n+", "\n", data)
-    fout.write(data)
+    with open(os.path.join(dest,"unhandled_glew.h"), "w") as fout:
+        data = "\n".join(lines[linenr] for linenr in range(len(lines)) if not linenr in handled_lines)
+        data = re.sub("\n\n+", "\n", data)
+        fout.write(data)
