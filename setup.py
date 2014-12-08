@@ -7,20 +7,16 @@ from Cython.Build import cythonize
 
 if platform.system() == 'Darwin':
 	includes = []
-	f = '-framework'
-	link_args = [f, 'OpenGL']
-	libs = []
-	libglew = ["/usr/local/Cellar/glew/1.10.0/lib/libGLEW.a"]
+	link_args = []
+	libs = ['GLEW']
 elif platform.system() == 'Windows':
 	includes = []
-	libs = ['OpenGL32']
+	libs = ['GLEW32']
 	link_args = []
-	libglew = ["/usr/local/Cellar/glew/1.10.0/lib/libGLEW.a"]
 else:
-	includes = ['/usr/include/GL',]
-	libs = ['GL']
+	includes = []
+	libs = ['GLEW']
 	link_args = []
-	libglew = ["/usr/lib/x86_64-linux-gnu/libGLEW/libGLEW.a"]
 
 
 extensions = [
@@ -28,14 +24,12 @@ extensions = [
 	Extension(	name="cygl.utils",
 				sources=['utils.pyx'],
 				include_dirs = includes,
-				extra_objects = libglew,
 				libraries = libs,
 				extra_link_args=link_args,
 				extra_compile_args=[]),
 	Extension(	name="cygl.shader",
 				sources=['shader.pyx'],
 				include_dirs = includes,
-				extra_objects = libglew,
 				libraries = libs,
 				extra_link_args=link_args,
 				extra_compile_args=[]),
