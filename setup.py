@@ -8,6 +8,7 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 
 from glew_pxd import generate_pxd
+generate_pxd('C:/Program Files (x86)/Windows Kits/8.1/Include/um/gl/glew.h')
 
 if platform.system() == 'Darwin':
 	glew_header = '/usr/local/Cellar/glew/1.10.0/include/GL/glew.h'
@@ -15,9 +16,11 @@ if platform.system() == 'Darwin':
 	link_args = []
 	libs = ['GLEW']
 elif platform.system() == 'Windows':
-	generate_pxd('path_to_glew.h')
+	vs_base = os.getenv('VS90COMNTOOLS', 'C:/Program Files (x86)/Microsoft Visual Studio 9.0')
+	glew_header = os.path.join(vs_base, '../../VC/include/gl/glew.h')
+	print glew_header
 	includes = []
-	libs = ['GLEW32']
+	libs = ['glew32', 'openGL32']
 	link_args = []
 else:
 	glew_header = '/usr/include/GL/glew.h'
