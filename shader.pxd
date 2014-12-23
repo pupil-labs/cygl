@@ -2,7 +2,7 @@ cimport glew as gl
 
 cdef class Shader:
     cdef dict uniforms
-    cdef object _vertex_code , _fragment_code
+    cdef object _vertex_code , _fragment_code, _geometry_code
     cdef gl.GLuint handle
     cdef bint linked
 

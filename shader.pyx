@@ -3,10 +3,10 @@ cimport glew as gl
 cdef class Shader:
     ''' Base shader class. '''
 
-    def __cinit__(self, vertex_code = None, fragment_code = None):
+    def __cinit__(self, vertex_code = None, fragment_code = None, geometry_code = None):
         pass
 
-    def __init__(self, vertex_code = None, fragment_code = None):
+    def __init__(self, vertex_code = None, fragment_code = None, geometry_code = None):
         '''
         Compile and link vertex code and fragment code into a shader.
 
@@ -16,11 +16,15 @@ cdef class Shader:
 
             ``fragment_code``: string
                 Fragment code
+
+            ``fragment_code``: string
+                Fragment code                
         '''
 
         self.uniforms = {}
         self._vertex_code = vertex_code
         self._fragment_code = fragment_code
+        self._geometry_code = geometry_code
 
         # create the program handle
         self.handle = gl.glCreateProgram()
@@ -34,8 +38,9 @@ cdef class Shader:
         # create the fragment shader
         self._build_shader(fragment_code, gl.GL_FRAGMENT_SHADER)
 
-        # the geometry shader will be the same, once pyglet supports the
-        # extension self.createShader(frag, GL_GEOMETRY_SHADER_EXT) atstatust to
+        # create the geometry shader
+        self._build_shader(geometry_code, gl.GL_GEOMETRY_SHADER)
+
         # link the program
         self._link()
 
@@ -85,6 +90,8 @@ cdef class Shader:
                 raise Exception('Vertex compilation: ' + self._get_shader_info(shader))
             elif shader_type == gl.GL_FRAGMENT_SHADER:
                 raise Exception('Fragment compilation: ' + self._get_shader_info(shader))
+            elif shader_type == gl.GL_GEOMETRY_SHADER:
+                raise Exception('Geometry compilation: ' + self._get_shader_info(shader))
             else:
                 raise Exception(self._get_shader_info(shader))
         else:
@@ -193,3 +200,9 @@ cdef class Shader:
         for lineno,line in enumerate(self._fragment_code.split('\n')):
             code += '%3d: ' % (lineno+1) + line + '\n'
         return code
+
+    def get_geometry_code(self,lineno=True):
+        code = ''
+        for lineno,line in enumerate(self._geometry_code.split('\n')):
+            code += '%3d: ' % (lineno+1) + line + '\n'
+        return code        

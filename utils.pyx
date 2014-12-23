@@ -36,8 +36,10 @@ cpdef draw_points(points,int size=20,color=(1.,0.5,0.5,.5),float sharpness=0.8):
             gl_FragColor = mix(f_color, vec4(f_color.rgb,0.0), smoothstep(sharpness*size*0.5, 0.5*size, dist));
         }
         """
+
+        GEOM_SHADER = """"""
         #shader link and compile
-        simple_pt_shader = shader.Shader(VERT_SHADER,FRAG_SHADER)
+        simple_pt_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
     simple_pt_shader.bind()
     simple_pt_shader.uniform1f('size',size)
