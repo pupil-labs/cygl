@@ -30,16 +30,11 @@ cdef class RGBA:
 
     def __setitem__(self,idx,obj):
         if isinstance(idx,slice):
-            t = self[:]
-            t[slice] = obj
+            t = [self.r,self.g,self.b,self.a]
+            t[idx] = obj
             self.r,self.g,self.b,self.a = t
         else:
-            if idx ==0:
-                self.x = obj
-            elif idx == 1:
-                self.y == obj
-            else:
-                raise IndexError()
+            raise IndexError()
 
 
 cpdef init():
