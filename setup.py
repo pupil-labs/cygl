@@ -54,12 +54,13 @@ setup( 	name="cygl",
 		version="0.0.1",
 		author= 'Moritz Kassner',
 		licence = 'MIT',
+		#this package shall be called cygl
+		packages = ['cygl'],
 		# dependencies are in flat dir for submodule integration
 		# this way the source and compiled extension will have the same file layout.
 		# disutils should treat the files in this dir as being in a dir called cygl.
 		package_dir= {'cygl':''},
-		#this package shall be called cygl
-		packages = ['cygl'],
+        exclude_package_data= {'': ['glew_pxd.py'] },
 		description="OpenGL utility functions powered by python. This module can also be used as a submodule for other cython projects that want to use OpenGL.",
 		ext_modules=cythonize(extensions)
 )
