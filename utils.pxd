@@ -5,4 +5,4 @@ cdef class RGBA:
 
 cpdef init()
 
-cpdef draw_points(points,int size=*,RGBA color=*,float sharpness=*)
+cpdef draw_points(points,float size=*,RGBA color=*,float sharpness=*)

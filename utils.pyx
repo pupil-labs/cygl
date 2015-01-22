@@ -42,7 +42,7 @@ cpdef init():
 
 simple_pt_shader = None
 
-cpdef draw_points(points,int size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
+cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
     if not simple_pt_shader:
 
