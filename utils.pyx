@@ -85,7 +85,7 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     glEnd()
     simple_pt_shader.unbind()
 
-cpdef draw_polyline(verts,float width=1,RGBA color=RGBA(1.,1.5,0.5,.5),line_type = GL_LINE_STRIP):
+cpdef draw_polyline(verts,float width=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
     glColor4f(color.r,color.g,color.b,color.a)
     glBegin(line_type)
     for v in verts:
