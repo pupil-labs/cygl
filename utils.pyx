@@ -3,6 +3,7 @@ cimport shader
 
 
 
+
 cdef class RGBA:
     #cdef public float r,g,b,a
     def __cinit__(self,r=1,g=1,b=1,a=1):
@@ -85,7 +86,7 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     glEnd()
     simple_pt_shader.unbind()
 
-cpdef draw_polyline(verts,float width=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
+cpdef draw_polyline(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
     glColor4f(color.r,color.g,color.b,color.a)
     glBegin(line_type)
     for v in verts:
