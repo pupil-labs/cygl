@@ -85,4 +85,190 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     glEnd()
     simple_pt_shader.unbind()
 
+cpdef draw_polyline(verts,float width=1,RGBA color=RGBA(1.,1.5,0.5,.5),line_type = GL_LINE_STRIP):
+    glColor4f(color.r,color.g,color.b,color.a)
+    glBegin(line_type)
+    for v in verts:
+        glVertex3f(v[0],v[1],0)
+    glEnd()
+
+
+
+
+def create_named_texture(shape):
+    if len(shape) ==2:
+        height, width = shape
+        channels = 1
+    elif len(shape) ==3:
+        height, width, channels = shape
+    else:
+        raise Exception()
+
+    gl_blend = (None,GL_LUMINANCE,None,GL_BGR,GL_BGRA)[channels]
+    gl_blend_init = (None,GL_LUMINANCE,None,GL_RGB,GL_RGBA)[channels]
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1)
+    cdef GLuint texture_id = 0
+    glGenTextures(1, &texture_id)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+    # Create Texture
+    glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        gl_blend_init,
+                        width,
+                        height,
+                        0,
+                        gl_blend,
+                        GL_UNSIGNED_BYTE,
+                        NULL)
+
+    return texture_id
+
+def update_named_texture(texture_id, image):
+    cdef unsigned char[:,:,:] data_3
+    cdef unsigned char[:,:] data_1
+
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+
+    if len(image.shape) == 2:
+        height, width = image.shape
+        channels = 1
+        data_1 = image
+
+    else:
+        height, width, channels = image.shape
+        data_3 = image
+
+    gl_blend = (None,GL_LUMINANCE,None,GL_BGR,GL_BGRA)[channels]
+    gl_blend_init = (None,GL_LUMINANCE,None,GL_RGB,GL_RGBA)[channels]
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1)
+    # Create Texture and upload data
+    if channels ==1:
+        glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        gl_blend_init,
+                        width,
+                        height,
+                        0,
+                        gl_blend,
+                        GL_UNSIGNED_BYTE,
+                        <void*>&data_1[0,0])
+    else:
+        glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        gl_blend_init,
+                        width,
+                        height,
+                        0,
+                        gl_blend,
+                        GL_UNSIGNED_BYTE,
+                        <void*>&data_3[0,0,0])
+
+    glBindTexture(GL_TEXTURE_2D, 0)
+
+
+def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.))):
+    """
+    We draw the image as a texture on a quad from 0,0 to img.width,img.height.
+    We set the coord system to pixel dimensions.
+    to save cpu power, update can be false and we will reuse the old img instead of uploading the new.
+    """
+
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+    glEnable(GL_TEXTURE_2D)
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST) # interpolation here
+    if not interpolation:
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    # someday replace with this:
+    # glEnableClientState(GL_VERTEX_ARRAY)
+    # glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+    # Varray = numpy.array([[0,0],[0,1],[1,1],[1,0]],numpy.float)
+    # glVertexPointer(2,GL_FLOAT,0,Varray)
+    # glTexCoordPointer(2,GL_FLOAT,0,Varray)
+    # indices = [0,1,2,3]
+    # glDrawElements(GL_QUADS,1,GL_UNSIGNED_SHORT,indices)
+    glColor4f(1.0,1.0,1.0,1.0)
+    # Draw textured Quad.
+    glBegin(GL_QUADS)
+    # glTexCoord2f(0.0, 0.0)
+    glTexCoord2f(0.0, 1.0)
+    glVertex2f(quad[0][0],quad[0][1])
+    glTexCoord2f(1.0, 1.0)
+    glVertex2f(quad[1][0],quad[1][1])
+    glTexCoord2f(1.0, 0.0)
+    glVertex2f(quad[2][0],quad[2][1])
+    glTexCoord2f(0.0, 0.0)
+    glVertex2f(quad[3][0],quad[3][1])
+    glEnd()
+
+    glBindTexture(GL_TEXTURE_2D, 0)
+    glDisable(GL_TEXTURE_2D)
+
+
+
+def draw_gl_texture(image,interpolation=True):
+    """
+    We draw the image as a texture on a quad from 0,0 to img.width,img.height.
+    Simple anaymos texture one time use. Look at named texture fn's for better perfomance
+    """
+    cdef unsigned char[:,:,:] data_3
+    cdef unsigned char[:,:] data_1
+    if len(image.shape) == 2:
+        height, width = image.shape
+        channels = 1
+        data_1 = image
+
+    else:
+        height, width, channels = image.shape
+        data_3 = image
+    gl_blend = (None,GL_LUMINANCE,None,GL_BGR,GL_BGRA)[channels]
+    gl_blend_init = (None,GL_LUMINANCE,None,GL_RGB,GL_RGBA)[channels]
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1)
+    glEnable(GL_TEXTURE_2D)
+    # Create Texture and upload data
+    if channels ==1:
+        glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        gl_blend_init,
+                        width,
+                        height,
+                        0,
+                        gl_blend,
+                        GL_UNSIGNED_BYTE,
+                        <void*>&data_1[0,0])
+    else:
+        glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        gl_blend_init,
+                        width,
+                        height,
+                        0,
+                        gl_blend,
+                        GL_UNSIGNED_BYTE,
+                        <void*>&data_3[0,0,0])
+
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST) # interpolation here
+    if not interpolation:
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+    glColor4f(1.0,1.0,1.0,1.0)
+    # Draw textured Quad.
+    glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 1.0)
+    glVertex2f(0,0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex2f(1,0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex2f(1,1)
+    glTexCoord2f(0.0, 0.0)
+    glVertex2f(0,1)
+    glEnd()
+
+    glDisable(GL_TEXTURE_2D)
+
 
