@@ -105,6 +105,7 @@ cpdef draw_points_norm(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float
 
 cpdef draw_polyline(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
     glColor4f(color.r,color.g,color.b,color.a)
+    glLineWidth(thickness)
     glBegin(line_type)
     for v in verts:
         glVertex3f(v[0],v[1],0)
