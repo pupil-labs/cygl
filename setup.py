@@ -12,18 +12,20 @@ from glew_pxd import generate_pxd
 if platform.system() == 'Darwin':
 	glew_header = '/usr/local/Cellar/glew/1.10.0/include/GL/glew.h'
 	includes = []
+	lib_dir = []
 	link_args = []
 	libs = ['GLEW']
 elif platform.system() == 'Windows':
-	vs_base = os.getenv('VS90COMNTOOLS', 'C:/Program Files (x86)/Microsoft Visual Studio 9.0')
-	glew_header = os.path.join(vs_base, '../../VC/include/gl/glew.h')
-	includes = []
+	glew_header = 'win_glew/gl/glew.h'
+	includes = ['win_glew']
 	libs = ['glew32', 'openGL32']
+	lib_dir = ['win_glew']
 	link_args = []
 else:
 	glew_header = '/usr/include/GL/glew.h'
 	includes = []
 	libs = ['GLEW']
+	lib_dir = []
 	link_args = []
 
 if os.path.isfile('glew.pxd') and os.stat('glew.pxd')[ST_MTIME] > os.stat(glew_header)[ST_MTIME]:
@@ -39,12 +41,14 @@ extensions = [
 				sources=['utils.pyx'],
 				include_dirs = includes,
 				libraries = libs,
+				library_dirs = lib_dir,
 				extra_link_args=link_args,
 				extra_compile_args=[]),
 	Extension(	name="cygl.shader",
 				sources=['shader.pyx'],
 				include_dirs = includes,
 				libraries = libs,
+				library_dirs = lib_dir,
 				extra_link_args=link_args,
 				extra_compile_args=[]),
 ]
