@@ -14,7 +14,6 @@ lib_dir = []
 if platform.system() == 'Darwin':
 	glew_header = '/usr/local/Cellar/glew/1.10.0/include/GL/glew.h'
 	includes = []
-	lib_dir = []
 	link_args = []
 	libs = ['GLEW']
 elif platform.system() == 'Windows':
@@ -27,7 +26,6 @@ elif platform.system() == 'Linux':
 	glew_header = '/usr/include/GL/glew.h'
 	includes = ['/usr/include/GL']
 	libs = ['GLEW']
-	lib_dir = []
 	link_args = []
 	
 if os.path.isfile('glew.pxd') and os.stat('glew.pxd')[ST_MTIME] > os.stat(glew_header)[ST_MTIME]:
