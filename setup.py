@@ -12,8 +12,10 @@ from glew_pxd import generate_pxd
 lib_dir = []
 
 if platform.system() == 'Darwin':
-	glew_header = '/usr/local/Cellar/glew/1.10.0/include/GL/glew.h'
-	includes = []
+    # find glew.h irrespective of version
+    for root, dirs, files in os.walk('/usr/local/Cellar/glew'):
+        if 'glew.h' in files:
+            glew_header = os.path.join(root,'glew.h')	includes = []
 	link_args = []
 	libs = ['GLEW']
 elif platform.system() == 'Windows':
@@ -27,7 +29,7 @@ elif platform.system() == 'Linux':
 	includes = ['/usr/include/GL']
 	libs = ['GLEW']
 	link_args = []
-	
+
 if os.path.isfile('glew.pxd') and os.stat('glew.pxd')[ST_MTIME] > os.stat(glew_header)[ST_MTIME]:
     print "'glew.pxd' is up-to-date."
 else:
