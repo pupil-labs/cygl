@@ -15,9 +15,10 @@ if platform.system() == 'Darwin':
     # find glew.h irrespective of version
     for root, dirs, files in os.walk('/usr/local/Cellar/glew'):
         if 'glew.h' in files:
-            glew_header = os.path.join(root,'glew.h')	includes = []
-	link_args = []
-	libs = ['GLEW']
+            glew_header = os.path.join(root,'glew.h')
+    includes = []
+    link_args = []
+    libs = ['GLEW']
 elif platform.system() == 'Windows':
 	glew_header = 'win_glew/gl/glew.h'
 	includes = ['win_glew']
