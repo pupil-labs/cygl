@@ -39,6 +39,8 @@ cdef class RGBA:
 
 
 cpdef init():
+    global simple_pt_shader
+    simple_pt_shader = None
     return glewInit()
 
 simple_pt_shader = None
@@ -156,6 +158,10 @@ def create_named_texture(shape):
                         NULL)
 
     return texture_id
+
+def destroy_named_texture(int texture_id):
+    cdef GLuint texture_cid = texture_id
+    glDeleteTextures(1,&texture_cid)
 
 def update_named_texture(texture_id, image):
     cdef unsigned char[:,:,:] data_3
