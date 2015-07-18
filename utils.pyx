@@ -113,6 +113,15 @@ cpdef draw_polyline(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_
         glVertex3f(v[0],v[1],0)
     glEnd()
 
+cpdef draw_polyline3d(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
+    glColor4f(color.r,color.g,color.b,color.a)
+    glLineWidth(thickness)
+    glBegin(line_type)
+    for v in verts:
+        glVertex3f(v[0],v[1],v[2])
+    glEnd()
+
+
 cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -207,7 +216,7 @@ def update_named_texture(texture_id, image):
     glBindTexture(GL_TEXTURE_2D, 0)
 
 
-def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.))):
+def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
     """
     We draw the image as a texture on a quad from 0,0 to img.width,img.height.
     We set the coord system to pixel dimensions.
@@ -229,7 +238,7 @@ def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.
     # glTexCoordPointer(2,GL_FLOAT,0,Varray)
     # indices = [0,1,2,3]
     # glDrawElements(GL_QUADS,1,GL_UNSIGNED_SHORT,indices)
-    glColor4f(1.0,1.0,1.0,1.0)
+    glColor4f(1.0,1.0,1.0,alpha)
     # Draw textured Quad.
     glBegin(GL_QUADS)
     # glTexCoord2f(0.0, 0.0)
