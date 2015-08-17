@@ -320,3 +320,158 @@ def draw_gl_texture(image,interpolation=True):
     glDisable(GL_TEXTURE_2D)
 
 
+
+
+
+
+cdef class Render_Target:
+    ### OpenGL funtions for rendering to texture.
+    ### Using this saves us considerable cpu/gpu time when the UI remains static.
+    #cdef fbo_tex_id defined in .pxd
+    def __cinit__(self,w,h):
+        pass
+    def __init__(self,w,h):
+        self.fbo_tex_id = create_ui_texture(w,h)
+
+    def push(self):
+        render_to_ui_texture(self.fbo_tex_id)
+
+    def pop(self):
+        render_to_screen()
+
+    def draw(self,float alpha=1.0):
+        draw_ui_texture(self.fbo_tex_id,alpha)
+
+    def resize(self,int w, int h):
+        resize_ui_texture(self.fbo_tex_id,w,h)
+
+    def __del__(self):
+        destroy_ui_texture(self.fbo_tex_id)
+
+### OpenGL funtions for rendering to texture.
+### Using this saves us considerable cpu/gpu time when the UI remains static.
+ctypedef struct fbo_tex_id:
+    GLuint fbo_id
+    GLuint tex_id
+
+cdef fbo_tex_id create_ui_texture(int w,int h):
+    cdef fbo_tex_id ui_layer
+    ui_layer.fbo_id = 0
+    ui_layer.tex_id = 0
+
+    # create Framebufer Object
+    #requires gl ext or opengl > 3.0
+    glGenFramebuffers(1, &ui_layer.fbo_id)
+    glBindFramebuffer(GL_FRAMEBUFFER, ui_layer.fbo_id)
+
+    #create texture object
+    glGenTextures(1, &ui_layer.tex_id)
+    glBindTexture(GL_TEXTURE_2D, ui_layer.tex_id)
+    # configure Texture
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, w,
+                    h, 0,GL_RGBA, GL_UNSIGNED_BYTE,
+                    NULL)
+    #set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
+    #attach texture to fbo
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                GL_TEXTURE_2D, ui_layer.tex_id, 0)
+
+    if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
+        raise Exception("UI Framebuffer could not be created.")
+
+    #unbind fbo and texture
+    glBindTexture(GL_TEXTURE_2D, 0)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+
+    return ui_layer
+
+cdef destroy_ui_texture(fbo_tex_id ui_layer):
+    glDeleteTextures(1,&ui_layer.tex_id)
+    glDeleteFramebuffers(1,&ui_layer.fbo_id)
+
+cdef resize_ui_texture(fbo_tex_id ui_layer, int w,int h):
+    glBindTexture(GL_TEXTURE_2D, ui_layer.tex_id)
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA, w,
+                    h, 0,GL_RGBA, GL_UNSIGNED_BYTE,
+                    NULL)
+    glBindTexture(GL_TEXTURE_2D, 0)
+
+
+cdef render_to_ui_texture(fbo_tex_id ui_layer):
+    # set fbo as render target
+    # blending method after:
+    # http://stackoverflow.com/questions/24346585/opengl-render-to-texture-with-partial-transparancy-translucency-and-then-rende/24380226#24380226
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                                GL_ONE_MINUS_DST_ALPHA, GL_ONE)
+    glBindFramebuffer(GL_FRAMEBUFFER, ui_layer.fbo_id)
+    glClearColor(0.,0.,0.,0.)
+    glClear(GL_COLOR_BUFFER_BIT)
+
+
+cdef render_to_screen():
+    # set rendertarget 0
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+cdef draw_ui_texture(fbo_tex_id ui_layer,float alpha = 1.0):
+    # render texture
+
+    # set blending
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+
+    # bind texture and use.
+    glBindTexture(GL_TEXTURE_2D, ui_layer.tex_id)
+    glEnable(GL_TEXTURE_2D)
+
+    #set up coord system
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    glOrtho(0, 1, 1, 0, -1, 1)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glColor4f(alpha,alpha,alpha,alpha)
+    # Draw textured Quad.
+    glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 1.0)
+    glVertex2f(0,0)
+    glTexCoord2f(1.0, 1.0)
+    glVertex2f(1,0)
+    glTexCoord2f(1.0, 0.0)
+    glVertex2f(1,1)
+    glTexCoord2f(0.0, 0.0)
+    glVertex2f(0,1)
+    glEnd()
+
+    #pop coord systems
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glPopMatrix()
+
+    glBindTexture(GL_TEXTURE_2D, 0)
+    glDisable(GL_TEXTURE_2D)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+
+cpdef push_ortho(int w,int h):
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    glOrtho(0, w,h, 0, -1, 1)
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+cpdef pop_ortho():
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glPopMatrix()
+
+
