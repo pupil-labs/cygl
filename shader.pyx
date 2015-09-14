@@ -18,7 +18,7 @@ cdef class Shader:
                 Fragment code
 
             ``fragment_code``: string
-                Fragment code                
+                Fragment code
         '''
 
         self.uniforms = {}
@@ -153,6 +153,15 @@ cdef class Shader:
         self.uniforms[name] = loc
         gl.glUniform1f(loc, val)
 
+    cpdef uniform1i(self, bytes name, int val):
+        ''' Upload integer uniform(s), program must be currently bound. '''
+
+        loc = self.uniforms.get(name,
+                                gl.glGetUniformLocation(self.handle,name))
+        if loc < 0:
+            raise Exception('''Unknow uniform location '%s' ''' % name)
+        self.uniforms[name] = loc
+        gl.glUniform1i(loc, val)
 
     cpdef uniformi(self, bytes name, vals):
         ''' Upload integer uniform(s), program must be currently bound. '''
@@ -205,4 +214,4 @@ cdef class Shader:
         code = ''
         for lineno,line in enumerate(self._geometry_code.split('\n')):
             code += '%3d: ' % (lineno+1) + line + '\n'
-        return code        
+        return code
