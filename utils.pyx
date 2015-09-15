@@ -140,61 +140,16 @@ cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),
     glPopMatrix()
 
 
-def create_named_texture(shape):
-    if len(shape) ==2:
-        height, width = shape
-        channels = 1
-    elif len(shape) ==3:
-        height, width, channels = shape
-    else:
-        raise Exception()
+def create_named_texture():
 
-    gl_blend = (None,GL_LUMINANCE,None,GL_BGR,GL_BGRA)[channels]
-    gl_blend_init = (None,GL_LUMINANCE,None,GL_RGB,GL_RGBA)[channels]
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT,1)
     cdef GLuint texture_id = 0
     glGenTextures(1, &texture_id)
-    glBindTexture(GL_TEXTURE_2D, texture_id)
-    # Create Texture
-    glTexImage2D(GL_TEXTURE_2D,
-                        0,
-                        gl_blend_init,
-                        width,
-                        height,
-                        0,
-                        gl_blend,
-                        GL_UNSIGNED_BYTE,
-                        NULL)
 
     return texture_id
 
-def create_named_yuv422_texture(shape):
 
-    if len(shape) ==2:
-        height, width = shape
-        channels = 3
-    else:
-        raise Exception()
 
-    # Create Texture
-    cdef GLuint texture_id = 0
-    glGenTextures(1, &texture_id)
-    glBindTexture(GL_TEXTURE_2D, texture_id)
-    # Create Texture
-    glTexImage2D(GL_TEXTURE_2D,
-                        0,
-                        GL_LUMINANCE,
-                        width,
-                        height * 2, # take the sampling in to account
-                        0,
-                        GL_LUMINANCE,
-                        GL_UNSIGNED_BYTE,
-                        NULL)
-
-    return texture_id
-
-def update_named_yuv422_texture(texture_id,  imageData, width, height):
+def update_named_texture_yuv422(texture_id,  imageData, width, height):
 
     cdef unsigned char[::1] data_1
     data_1 = imageData
@@ -216,7 +171,7 @@ def update_named_yuv422_texture(texture_id,  imageData, width, height):
 
     glBindTexture(GL_TEXTURE_2D, 0)
 
-def draw_named_yuv422_texture(texture_id , interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0 ):
+def draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0 ):
     """
     We draw the image as a texture on a quad from 0,0 to img.width,img.height.
     We set the coord system to pixel dimensions.
