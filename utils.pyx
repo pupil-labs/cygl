@@ -1,4 +1,5 @@
 from glew cimport *
+from cython cimport view
 cimport shader
 
 
@@ -88,6 +89,19 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
         glVertex3f(pt[0],pt[1],0)
     glEnd()
     simple_pt_shader.unbind()
+
+cpdef draw_concentric_circles():
+
+
+    glEnableClientState(GL_VERTEX_ARRAY)
+    cdef float vertices[12]
+    glVertexPointer(2,GL_FLOAT,0,&vertices[0]) # set any value, since we calculate the position in the vertex shader
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDisableClientState(GL_VERTEX_ARRAY)
+
+
 
 cpdef draw_points_norm(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
 
