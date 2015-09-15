@@ -41,8 +41,8 @@ cdef class RGBA:
 cpdef init():
     if glewInit() != GLEW_OK:
         raise Exception("GLEW could not be initialized!")
-    if not glewIsSupported("GL_VERSION_2_0"):
-        raise Exception("This OpenGL context is below 2.0.")
+    if not glewIsSupported("GL_VERSION_2_1"):
+        raise Exception("This OpenGL context is below 2.1.")
     global simple_pt_shader
     simple_pt_shader = None
     return
