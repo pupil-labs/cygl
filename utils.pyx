@@ -46,6 +46,7 @@ cpdef init():
 
 simple_pt_shader = None
 simple_yuv422_shader = None
+simple_concentric_circle_shader = None
 
 cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
@@ -90,16 +91,107 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     glEnd()
     simple_pt_shader.unbind()
 
-cpdef draw_concentric_circles():
+cpdef draw_concentric_circles( centerPosition = (0,0), radii = 10 , circleAmount = 5, alpha = 1.0):
 
+    global simple_concentric_circle_shader
+
+    if not simple_concentric_circle_shader:
+        VERT_SHADER = """
+        #version 120
+        #extension GL_EXT_gpu_shader4 : require
+        varying vec2 texCoord;
+
+        uniform vec2 centerPosition; // position in screen coordinates
+        uniform float radii = 10; // radii of each circle
+        uniform int circleAmount = 4;
+        flat varying float quadSize;
+
+        void main () {
+                const vec2 quadVertices[6] = vec2[6](
+                        vec2(-0.5, -0.5),
+                        vec2(-0.5, 0.5),
+                        vec2(0.5, -0.5),
+                        vec2(-0.5, 0.5),
+                        vec2(0.5, 0.5) ,
+                        vec2(0.5, -0.5));
+
+                const vec2 quadTexCoords[6] = vec2[6](
+                        vec2(0, 0),
+                        vec2(0, 1),
+                        vec2(1, 0),
+                        vec2(0, 1),
+                        vec2(1, 1) ,
+                        vec2(1, 0));
+
+               quadSize = radii * circleAmount * 2 * 1.1;
+
+               gl_Position =  gl_ModelViewProjectionMatrix * vec4( centerPosition + quadSize * 0.5 *  quadVertices[gl_VertexID], 0.0, 1.0);
+               texCoord = quadTexCoords[gl_VertexID];
+               }
+        """
+
+        FRAG_SHADER = """
+        #version 120
+        #extension GL_EXT_gpu_shader4 : require
+
+
+        varying vec2 texCoord;
+        uniform vec2 centerPosition; // position in screen coordinates
+        uniform float radii = 10; // radii of each circle
+        uniform int circleAmount = 4;
+        flat varying float quadSize;
+        uniform float alpha = 1;
+
+        void main()
+        {
+            float dist = distance(texCoord , vec2(0.5,0.5));
+            float normalizedRadii = radii/quadSize;
+            float circleIndex = mod(dist/normalizedRadii, 2);
+            float segmentDelta = mod( circleIndex, 1) ;
+            float circleSize = normalizedRadii * circleAmount;
+
+            int colorIndex = int( floor( circleIndex));
+            float colors[2] =  float[2](0.0f, 1.0f);
+            const float colors2[2] =  float[2](1.0f, 0.0f);
+
+            vec3 color = vec3(colors[colorIndex]);
+            vec3 colorOpposit  = vec3(colors2[colorIndex]);
+
+            const float sharpness = 0.3;
+            color = mix(color, colorOpposit, smoothstep(0.0, sharpness, segmentDelta) );
+
+            if( dist  > circleSize ){
+                float delta = dist - circleSize;
+                gl_FragColor = vec4(color, alpha *  smoothstep(1.0-sharpness, 1.0, (0.207 - delta)/0.207 ) ); // 0.207 = sqrt(0.5^2 + 0.5^2) - 0.5 , length of texture corner to outer circle radius
+            }
+            else
+                gl_FragColor = vec4(color,alpha);
+
+        }
+        """
+
+        GEOM_SHADER = """"""
+        #shader link and compile
+        simple_concentric_circle_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
+
+
+
+    simple_concentric_circle_shader.bind()
+    simple_concentric_circle_shader.uniform1f('alpha', alpha)
+    simple_concentric_circle_shader.uniform1f('radii', radii)
+    simple_concentric_circle_shader.uniform1i('circleAmount', circleAmount)
+    simple_concentric_circle_shader.uniformf('centerPosition', centerPosition )
 
     glEnableClientState(GL_VERTEX_ARRAY)
     cdef float vertices[12]
-    glVertexPointer(2,GL_FLOAT,0,&vertices[0]) # set any value, since we calculate the position in the vertex shader
+    # set any value, since we calculate the position in the vertex shader
+    glVertexPointer(2,GL_FLOAT,0,&vertices[0])
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glDisableClientState(GL_VERTEX_ARRAY)
+
+    simple_concentric_circle_shader.unbind()
 
 
 
