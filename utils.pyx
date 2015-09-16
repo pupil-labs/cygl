@@ -1,7 +1,4 @@
-from glew cimport *
 cimport shader
-
-
 
 
 cdef class RGBA:
@@ -38,13 +35,18 @@ cdef class RGBA:
             raise IndexError()
 
 
-cpdef init():
-    global simple_pt_shader
-    simple_pt_shader = None
-    return glewInit()
+
 
 simple_pt_shader = None
 simple_yuv422_shader = None
+
+cpdef init():
+    global simple_pt_shader
+    simple_pt_shader = None
+    global simple_yuv422_shader
+    simple_yuv422_shader = None
+    return glewInit()
+
 
 cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
@@ -140,22 +142,59 @@ cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),
     glPopMatrix()
 
 
-def create_named_texture():
+cdef class Named_Texture:
+    ### OpenGL funtions for creating, updating and drawing a texture.
+    ### Using a Frame object to update.
+    #cdef GLuint texture_id
+    #cdef bint use_yuv_shader
+    def __cinit__(self):
+        pass
+    def __init__(self):
+        self.texture_id = create_named_texture()
 
+    def update_from_frame(self,frame):
+        '''
+        update texture from a pupil "Frame" instance.
+        '''
+        yuv_buffer = frame.yuv_buffer
+        if yuv_buffer:
+            update_named_texture_yuv422(self.texture_id,yuv_buffer,frame.width,frame.height)
+            self.use_yuv_shader = True
+        else:
+           update_named_texture(self.texture_id,frame.bgr)
+           self.use_yuv_shader = False
+
+    def update_from_ndarray(self,img):
+        update_named_texture(self.texture_id,img)
+        self.use_yuv_shader = False
+
+    def update_from_yuv_buffer(self,yuv_buffer,width,height):
+        update_named_texture_yuv422(self.texture_id,yuv_buffer,width,height)
+        self.use_yuv_shader = True
+
+    def draw(self,interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
+        if self.use_yuv_shader:
+            draw_named_texture_yuv422(self.texture_id,interpolation,quad,alpha)
+        else:
+            draw_named_texture(self.texture_id,interpolation,quad,alpha)
+
+    def __dealloc__(self):
+        destroy_named_texture(self.texture_id)
+
+
+cpdef GLuint create_named_texture():
     cdef GLuint texture_id = 0
     glGenTextures(1, &texture_id)
-
     return texture_id
 
+cpdef destroy_named_texture(int texture_id):
+    cdef GLuint texture_cid = texture_id
+    glDeleteTextures(1,&texture_cid)
 
 
-def update_named_texture_yuv422(texture_id,  imageData, width, height):
-
-    cdef unsigned char[::1] data_1
-    data_1 = imageData
+cpdef update_named_texture_yuv422(texture_id, unsigned char[::1] imageData, width, height):
 
     glBindTexture(GL_TEXTURE_2D, texture_id)
-
     glPixelStorei(GL_UNPACK_ALIGNMENT,1)
     # Create Texture and upload data
     glTexImage2D(GL_TEXTURE_2D,
@@ -166,12 +205,10 @@ def update_named_texture_yuv422(texture_id,  imageData, width, height):
                     0,
                     GL_LUMINANCE,
                     GL_UNSIGNED_BYTE,
-                    <void*>&data_1[0])
-
-
+                    <void*>&imageData[0])
     glBindTexture(GL_TEXTURE_2D, 0)
 
-def draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0 ):
+cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0 ):
     """
     We draw the image as a texture on a quad from 0,0 to img.width,img.height.
     We set the coord system to pixel dimensions.
@@ -279,12 +316,7 @@ def draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(1.
 
 
 
-
-def destroy_named_texture(int texture_id):
-    cdef GLuint texture_cid = texture_id
-    glDeleteTextures(1,&texture_cid)
-
-def update_named_texture(texture_id, image):
+cpdef update_named_texture(texture_id, image):
     cdef unsigned char[:,:,:] data_3
     cdef unsigned char[:,:] data_1
 
@@ -328,7 +360,7 @@ def update_named_texture(texture_id, image):
     glBindTexture(GL_TEXTURE_2D, 0)
 
 
-def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
+cpdef draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
     """
     We draw the image as a texture on a quad from 0,0 to img.width,img.height.
     We set the coord system to pixel dimensions.
@@ -366,7 +398,6 @@ def draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(1.
 
     glBindTexture(GL_TEXTURE_2D, 0)
     glDisable(GL_TEXTURE_2D)
-
 
 
 def draw_gl_texture(image,interpolation=True):
@@ -433,38 +464,32 @@ def draw_gl_texture(image,interpolation=True):
 
 
 
-
-
-
 cdef class Render_Target:
     ### OpenGL funtions for rendering to texture.
     ### Using this saves us considerable cpu/gpu time when the UI remains static.
-    #cdef fbo_tex_id defined in .pxd
+    #cdef fbo_tex_id fbo_tex defined in .pxd
     def __cinit__(self,w,h):
         pass
     def __init__(self,w,h):
-        self.fbo_tex_id = create_ui_texture(w,h)
+        self.fbo_tex = create_ui_texture(w,h)
 
     def push(self):
-        render_to_ui_texture(self.fbo_tex_id)
+        render_to_ui_texture(self.fbo_tex)
 
     def pop(self):
         render_to_screen()
 
     def draw(self,float alpha=1.0):
-        draw_ui_texture(self.fbo_tex_id,alpha)
+        draw_ui_texture(self.fbo_tex,alpha)
 
     def resize(self,int w, int h):
-        resize_ui_texture(self.fbo_tex_id,w,h)
+        resize_ui_texture(self.fbo_tex,w,h)
 
-    def __del__(self):
-        destroy_ui_texture(self.fbo_tex_id)
+    def __dealloc__(self):
+        destroy_ui_texture(self.fbo_tex)
 
 ### OpenGL funtions for rendering to texture.
 ### Using this saves us considerable cpu/gpu time when the UI remains static.
-ctypedef struct fbo_tex_id:
-    GLuint fbo_id
-    GLuint tex_id
 
 cdef fbo_tex_id create_ui_texture(int w,int h):
     cdef fbo_tex_id ui_layer
