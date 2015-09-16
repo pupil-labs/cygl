@@ -20,6 +20,8 @@ cdef class Shader:
 
     cpdef uniform1f(self, bytes name,float val)
 
+    cpdef uniform1i(self, bytes name,int val)
+
     cpdef uniform_matrixf(self, bytes name, float[:] mat)
 
     cdef _get_shader_info(self,gl.GLuint shader)
