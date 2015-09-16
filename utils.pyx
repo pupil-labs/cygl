@@ -107,12 +107,15 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
         VERT_SHADER = """
         #version 120
         #extension GL_EXT_gpu_shader4 : require
+
         varying vec2 texCoord;
+        flat varying float quadSize;
+        flat varying float normalizedradius;
+        flat varying float circleSize;
 
         uniform vec2 center_position; // position in screen coordinates
         uniform float radius = 10; // radius of each circle
         uniform int circle_count = 4;
-        flat varying float quadSize;
 
         void main () {
                 const vec2 quadVertices[6] = vec2[6](
@@ -132,6 +135,9 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
                         vec2(1, 0));
 
                quadSize = radius * 2 * 1.1;
+               normalizedradius = radius/quadSize/circle_count;
+               circleSize = normalizedradius * circle_count;
+
 
                gl_Position =  gl_ModelViewProjectionMatrix * vec4( center_position + quadSize * 0.5 *  quadVertices[gl_VertexID], 0.0, 1.0);
                texCoord = quadTexCoords[gl_VertexID];
@@ -142,24 +148,20 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
         #version 120
         #extension GL_EXT_gpu_shader4 : require
 
-
         varying vec2 texCoord;
-        uniform vec2 center_position; // position in screen coordinates
-        uniform float radius = 10; // radius of each circle
-        uniform int circle_count = 4;
-        flat varying float quadSize;
+        flat varying float normalizedradius;
+        flat varying float circleSize;
+
         uniform float alpha = 1;
 
         void main()
         {
             float dist = distance(texCoord , vec2(0.5,0.5));
-            float normalizedradius = radius/quadSize/circle_count;
             float circleIndex = mod(dist/normalizedradius, 2);
-            float segmentDelta = mod( circleIndex, 1) ;
-            float circleSize = normalizedradius * circle_count;
+            float segmentDelta = fract(circleIndex) ;
 
-            int colorIndex = int( floor( circleIndex));
-            float colors[2] =  float[2](0.0f, 1.0f);
+            int colorIndex = int(floor(circleIndex));
+            const float colors[2] =  float[2](0.0f, 1.0f);
             const float colors2[2] =  float[2](1.0f, 0.0f);
 
             vec3 color = vec3(colors[colorIndex]);
