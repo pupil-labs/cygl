@@ -106,56 +106,34 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
     if not simple_concentric_circle_shader:
         VERT_SHADER = """
         #version 120
-        #extension GL_EXT_gpu_shader4 : require
-
-        varying vec2 texCoord;
-        flat varying float quadSize;
-        flat varying float normalizedradius;
-        flat varying float circleSize;
 
         uniform vec2 center_position; // position in screen coordinates
-        uniform float radius = 10; // radius of each circle
-        uniform int circle_count = 4;
+        uniform float radius = 10;
 
         void main () {
-                const vec2 quadVertices[6] = vec2[6](
-                        vec2(-0.5, -0.5),
-                        vec2(-0.5, 0.5),
-                        vec2(0.5, -0.5),
-                        vec2(-0.5, 0.5),
-                        vec2(0.5, 0.5) ,
-                        vec2(0.5, -0.5));
 
-                const vec2 quadTexCoords[6] = vec2[6](
-                        vec2(0, 0),
-                        vec2(0, 1),
-                        vec2(1, 0),
-                        vec2(0, 1),
-                        vec2(1, 1) ,
-                        vec2(1, 0));
+               float quadSize = radius * 2 * 1.1;
 
-               quadSize = radius * 2 * 1.1;
-               normalizedradius = radius/quadSize/circle_count;
-               circleSize = normalizedradius * circle_count;
+               gl_Position =  gl_ModelViewProjectionMatrix * vec4( center_position + quadSize * 0.5 *  gl_Vertex.xy, 0.0, 1.0);
+               gl_TexCoord[0] = gl_MultiTexCoord0;
 
-
-               gl_Position =  gl_ModelViewProjectionMatrix * vec4( center_position + quadSize * 0.5 *  quadVertices[gl_VertexID], 0.0, 1.0);
-               texCoord = quadTexCoords[gl_VertexID];
                }
         """
 
         FRAG_SHADER = """
         #version 120
-        #extension GL_EXT_gpu_shader4 : require
-
-        varying vec2 texCoord;
-        flat varying float normalizedradius;
-        flat varying float circleSize;
 
         uniform float alpha = 1;
+        uniform float radius = 10;
+        uniform int circle_count = 4;
 
         void main()
         {
+            vec2 texCoord = gl_TexCoord[0].st ;
+            float quadSize = radius * 2 * 1.1;
+            float normalizedradius = radius/quadSize/circle_count;
+            float circleSize = normalizedradius * circle_count;
+
             float dist = distance(texCoord , vec2(0.5,0.5));
             float circleIndex = mod(dist/normalizedradius, 2);
             float segmentDelta = fract(circleIndex) ;
@@ -192,14 +170,17 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
     simple_concentric_circle_shader.uniform1i('circle_count', circle_count)
     simple_concentric_circle_shader.uniformf('center_position', center_position )
 
-    glEnableClientState(GL_VERTEX_ARRAY)
-    cdef float vertices[12]
-    # set any value, since we calculate the position in the vertex shader
-    glVertexPointer(2,GL_FLOAT,0,&vertices[0])
+    glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 1.0)
+    glVertex2f(-0.5,-0.5)
+    glTexCoord2f(1.0, 1.0)
+    glVertex2f(0.5,-0.5)
+    glTexCoord2f(1.0, 0.0)
+    glVertex2f(0.5,0.5)
+    glTexCoord2f(0.0, 0.0)
+    glVertex2f(-0.5,0.5)
+    glEnd()
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    glDisableClientState(GL_VERTEX_ARRAY)
 
     simple_concentric_circle_shader.unbind()
 
