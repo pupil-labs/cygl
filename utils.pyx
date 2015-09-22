@@ -211,7 +211,7 @@ cpdef draw_polyline(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_
         glVertex3f(v[0],v[1],0)
     glEnd()
 
-cpdef draw_polyline3d(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
+def draw_polyline3d(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),line_type = GL_LINE_STRIP):
     glColor4f(color.r,color.g,color.b,color.a)
     glLineWidth(thickness)
     glBegin(line_type)
