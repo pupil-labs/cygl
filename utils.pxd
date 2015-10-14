@@ -16,7 +16,6 @@ ctypedef struct fbo_tex_id:
     GLuint fbo_id
     GLuint tex_id
 
-
 cdef class Render_Target:
     cdef fbo_tex_id fbo_tex
 
