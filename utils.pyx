@@ -94,8 +94,12 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     simple_pt_shader.uniform1f('sharpness',sharpness)
     glColor4f(color.r,color.g,color.b,color.a)
     glBegin(GL_POINTS)
-    for pt in points:
-        glVertex3f(pt[0],pt[1],0)
+    if len(points[0]) == 2:
+        for pt in points:
+            glVertex2f(pt[0],pt[1])
+    else:
+        for pt in points:
+            glVertex3f(pt[0],pt[1],pt[2])
     glEnd()
     simple_pt_shader.unbind()
 
