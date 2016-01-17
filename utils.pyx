@@ -41,14 +41,17 @@ cdef class RGBA:
 simple_pt_shader = None
 simple_yuv422_shader = None
 simple_concentric_circle_shader = None
+simple_circle_shader = None
 
 cpdef init():
     global simple_pt_shader
     global simple_yuv422_shader
     global simple_concentric_circle_shader
+    global simple_circle_shader
     simple_pt_shader = None
     simple_yuv422_shader = None
     simple_concentric_circle_shader = None
+    simple_circle_shader = None
 
     if glewInit() != GLEW_OK:
         raise Exception("GLEW could not be initialized!")
@@ -102,6 +105,82 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
             glVertex3f(pt[0],pt[1],pt[2])
     glEnd()
     simple_pt_shader.unbind()
+
+
+cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 2, RGBA color=RGBA(1.,0.5,0.5,0.5),float sharpness=0.8):
+
+    global simple_circle_shader
+
+    if not simple_circle_shader:
+        VERT_SHADER = """
+        #version 120
+
+        uniform vec2 center_position; // position in screen coordinates
+        uniform float radius;
+        uniform vec4 color;
+        uniform float stroke_width;
+        varying float quadSize;
+        void main () {
+
+               quadSize = radius * 2.0;
+               gl_Position =  gl_ModelViewProjectionMatrix * vec4( center_position + quadSize * 0.5 *  gl_Vertex.xy, 0.0, 1.0);
+               gl_TexCoord[0] = gl_MultiTexCoord0;
+
+               }
+        """
+
+        FRAG_SHADER = """
+        #version 120
+        uniform vec4 color;
+        uniform float radius;
+        uniform float sharpness;
+        uniform float stroke_width;
+        varying float quadSize;
+
+        void main()
+        {
+            vec2 texCoord = gl_TexCoord[0].st ;
+            float center_distance = distance(texCoord.xy, vec2(0.5, 0.5)) * quadSize; // in pixels
+
+            if( center_distance <= radius ){
+                float radius_distance = abs(center_distance - radius); // in pixels
+                float factor = smoothstep(stroke_width, stroke_width*sharpness ,radius_distance ) * smoothstep(0.0 , stroke_width * (1.0-sharpness),  radius_distance )  ;
+                gl_FragColor = mix(color, vec4(color.rgb,0.0), 1.0 - factor  );
+            }else{
+                gl_FragColor = vec4(0,0,0,0);
+            }
+
+        }
+        """
+
+        GEOM_SHADER = """"""
+        #shader link and compile
+        simple_circle_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
+
+
+
+    simple_circle_shader.bind()
+    simple_circle_shader.uniform1f('radius', radius)
+    simple_circle_shader.uniform1f('stroke_width', stroke_width)
+    simple_circle_shader.uniformf('center_position', center_position )
+    simple_circle_shader.uniform1f('sharpness',0.5)
+    simple_circle_shader.uniformf('color', color[:] )
+
+    glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 1.0)
+    glVertex2f(-0.5,-0.5)
+    glTexCoord2f(1.0, 1.0)
+    glVertex2f(0.5,-0.5)
+    glTexCoord2f(1.0, 0.0)
+    glVertex2f(0.5,0.5)
+    glTexCoord2f(0.0, 0.0)
+    glVertex2f(-0.5,0.5)
+    glEnd()
+
+
+    simple_circle_shader.unbind()
+
+
 
 cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_count = 5, alpha = 1.0):
 
