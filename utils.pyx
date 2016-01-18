@@ -165,7 +165,7 @@ cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 
     simple_circle_shader.uniform1f('radius', radius)
     simple_circle_shader.uniform1f('stroke_width', stroke_width)
     simple_circle_shader.uniformf('center_position', center_position )
-    simple_circle_shader.uniform1f('sharpness',0.5)
+    simple_circle_shader.uniform1f('sharpness',sharpness)
     simple_circle_shader.uniformf('color', color[:] )
 
     glBegin(GL_QUADS)
