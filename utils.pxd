@@ -24,5 +24,8 @@ cdef class Named_Texture:
     cdef GLuint texture_id
     cdef bint use_yuv_shader
 
+cdef class Gl_Sphere:
+    cdef GLuint vao_id
+
 cpdef push_ortho(int w,int h)
 cpdef pop_ortho()

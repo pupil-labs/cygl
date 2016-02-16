@@ -1,6 +1,7 @@
 from cython cimport view
+from libcpp.vector cimport vector
 cimport shader
-
+import math
 
 cdef class RGBA:
     #cdef public float r,g,b,a
@@ -319,6 +320,69 @@ cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),
     glPopMatrix()
 
 
+cdef class Gl_Sphere:
+    ### OpenGL funtions for creating and drawing a sphere.
+    #cdef GLuint texture_id
+    #cdef bint use_yuv_shader
+    def __cinit__(self):
+        pass
+    def __init__(self):
+        self.vao_id = create_vao()
+
+    def create(self, resolution = 10 ):
+
+        cdef float doubleRes = resolution*2.0
+        cdef float polarInc = math.pi/resolution
+        cdef float azimInc = math.pi*2.0/doubleRes
+
+        cdef vector[float] vertices
+        cdef vector[int] indices
+
+        cdef float nx,ny,nz
+        cdef float tr
+        for i in range(0, resolution+1):
+
+            tr = math.sin( math.pi-i * polarInc )
+            ny = math.cos( math.pi-i * polarInc )
+
+            for j in range(0, doubleRes+1):
+                nx = tr * math.sin(j * azimInc)
+                nz = tr * math.cos(j * azimInc)
+                vertices.push_back(nx)
+                vertices.push_back(ny)
+                vertices.push_back(nz)
+
+        nr = doubleRes+1
+        for y in range(0,resolution ):
+            for x in range(0,doubleRes+1 ):
+                indices.push_back( y*nr + x )
+                indices.push_back( (y+1)*nr + x )
+
+
+        glBindVertexArray(self.vao_id)
+        cdef GLuint indices_buffer
+        glGenBuffers(1, &indices_buffer)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices, GL_STATIC_DRAW)
+
+        cdef GLuint vertex_buffer
+        glGenBuffers(1, &vertex_buffer)
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer)
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), &vertices, GL_STATIC_DRAW)
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL )
+
+        glBindVertexArray(0)
+        glBindBuffer(GL_ARRAY_BUFFER,0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0)
+
+    def draw(self,interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
+        pass
+
+    def __dealloc__(self):
+        destroy_vao(self.vao_id)
+
+
 cdef class Named_Texture:
     ### OpenGL funtions for creating, updating and drawing a texture.
     ### Using a Frame object to update.
@@ -368,6 +432,14 @@ cpdef destroy_named_texture(int texture_id):
     cdef GLuint texture_cid = texture_id
     glDeleteTextures(1,&texture_cid)
 
+cpdef GLuint create_vao():
+    cdef GLuint vao_id = 0
+    glGenVertexArrays(1, &vao_id)
+    return vao_id
+
+cpdef destroy_vao(int vao_id):
+    cdef GLuint vao_cid = vao_id
+    glDeleteVertexArrays(1,&vao_cid)
 
 cpdef update_named_texture_yuv422(texture_id, unsigned char[::1] imageData, width, height):
 
