@@ -12,6 +12,7 @@ __pycache__/
 # C extensions and cython build files
 *.so
 *.c
+*.cpp
 
 # Distribution / packaging
 .Python
