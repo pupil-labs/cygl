@@ -1,4 +1,5 @@
 from glew cimport *
+from libcpp.vector cimport vector
 
 cdef class RGBA:
     cdef public float r,g,b,a
@@ -25,7 +26,11 @@ cdef class Named_Texture:
     cdef bint use_yuv_shader
 
 cdef class Gl_Sphere:
-    cdef GLuint vao_id
+    cdef GLuint vertex_buffer_id
+    cdef GLuint index_buffer_id
+    cdef int vertex_buffer_size
+    cdef int index_buffer_size
+    cdef int indices_amount
 
 cpdef push_ortho(int w,int h)
 cpdef pop_ortho()

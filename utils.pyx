@@ -39,16 +39,19 @@ cdef class RGBA:
 
 
 
+basic_shader = None
 simple_pt_shader = None
 simple_yuv422_shader = None
 simple_concentric_circle_shader = None
 simple_circle_shader = None
 
 cpdef init():
+    global basic_shader
     global simple_pt_shader
     global simple_yuv422_shader
     global simple_concentric_circle_shader
     global simple_circle_shader
+    basic_shader = None
     simple_pt_shader = None
     simple_yuv422_shader = None
     simple_concentric_circle_shader = None
@@ -58,6 +61,34 @@ cpdef init():
         raise Exception("GLEW could not be initialized!")
     if not glewIsSupported("GL_VERSION_2_1"):
         raise Exception("This OpenGL context is below 2.1.")
+
+    init_basic_shader()
+
+cdef init_basic_shader():
+    global basic_shader # we cache the shader because we only create it the first time we call this fn.
+    if not basic_shader:
+
+        VERT_SHADER = """
+        #version 120
+        attribute vec3 vertex;
+
+        void main () {
+               gl_Position = gl_ModelViewProjectionMatrix * vec4(vertex,1.);
+               }
+        """
+
+        FRAG_SHADER = """
+        #version 120
+        uniform vec4 color;
+        void main()
+        {
+            gl_FragColor = color;
+        }
+        """
+
+        GEOM_SHADER = """"""
+        #shader link and compile
+        basic_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
 
 cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float sharpness=0.8):
@@ -322,21 +353,19 @@ cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),
 
 cdef class Gl_Sphere:
     ### OpenGL funtions for creating and drawing a sphere.
-    #cdef GLuint texture_id
-    #cdef bint use_yuv_shader
     def __cinit__(self):
         pass
     def __init__(self):
-        self.vao_id = create_vao()
+        pass
 
     def create(self, resolution = 10 ):
 
-        cdef float doubleRes = resolution*2.0
+        cdef int doubleRes = resolution*2
         cdef float polarInc = math.pi/resolution
         cdef float azimInc = math.pi*2.0/doubleRes
 
-        cdef vector[float] vertices
-        cdef vector[int] indices
+        cdef vector[GLfloat] vertices
+        cdef vector[GLuint] indices
 
         cdef float nx,ny,nz
         cdef float tr
@@ -358,29 +387,44 @@ cdef class Gl_Sphere:
                 indices.push_back( y*nr + x )
                 indices.push_back( (y+1)*nr + x )
 
+        self.vertex_buffer_size = vertices.size() * sizeof(GLfloat)
+        self.indices_amount = indices.size()
+        self.index_buffer_size = indices.size() * sizeof(GLuint)
 
-        glBindVertexArray(self.vao_id)
-        cdef GLuint indices_buffer
-        glGenBuffers(1, &indices_buffer)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices, GL_STATIC_DRAW)
+        glGenBuffers(1, &self.index_buffer_id)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_id)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_size, indices.data(), GL_STATIC_DRAW)
 
-        cdef GLuint vertex_buffer
-        glGenBuffers(1, &vertex_buffer)
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer)
-        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertices.size(), &vertices, GL_STATIC_DRAW)
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL )
+        glGenBuffers(1, &self.vertex_buffer_id)
+        glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer_id)
+        glBufferData(GL_ARRAY_BUFFER, self.vertex_buffer_size, vertices.data() , GL_STATIC_DRAW)
 
-        glBindVertexArray(0)
         glBindBuffer(GL_ARRAY_BUFFER,0)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0)
 
-    def draw(self,interpolation=True, quad=((0.,0.),(1.,0.),(1.,1.),(0.,1.)),alpha=1.0):
-        pass
+    def draw(self, color = RGBA(0.5,0.5,0,0.5), primitive_type = GL_LINE_STRIP):
+        basic_shader.bind()
+        basic_shader.uniformf('color', color[:] )
+
+        glBindAttribLocation(basic_shader.handle , 0 , 'vertex')
+
+        glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer_id)
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL )
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_id)
+        glDrawElements(primitive_type, self.indices_amount , GL_UNSIGNED_INT,  NULL )
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        glDisableVertexAttribArray(0)
+
+        basic_shader.unbind()
+
 
     def __dealloc__(self):
-        destroy_vao(self.vao_id)
+        glDeleteBuffers(1,&self.index_buffer_id)
+        glDeleteBuffers(1,&self.vertex_buffer_id)
 
 
 cdef class Named_Texture:
@@ -431,15 +475,6 @@ cpdef GLuint create_named_texture():
 cpdef destroy_named_texture(int texture_id):
     cdef GLuint texture_cid = texture_id
     glDeleteTextures(1,&texture_cid)
-
-cpdef GLuint create_vao():
-    cdef GLuint vao_id = 0
-    glGenVertexArrays(1, &vao_id)
-    return vao_id
-
-cpdef destroy_vao(int vao_id):
-    cdef GLuint vao_cid = vao_id
-    glDeleteVertexArrays(1,&vao_cid)
 
 cpdef update_named_texture_yuv422(texture_id, unsigned char[::1] imageData, width, height):
 
