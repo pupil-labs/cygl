@@ -389,11 +389,11 @@ cdef class Sphere:
 
         glGenBuffers(1, &self.index_buffer_id)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_id)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_size, indices.data(), GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.index_buffer_size, &indices[0], GL_STATIC_DRAW)
 
         glGenBuffers(1, &self.vertex_buffer_id)
         glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer_id)
-        glBufferData(GL_ARRAY_BUFFER, self.vertex_buffer_size, vertices.data() , GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, self.vertex_buffer_size, &vertices[0] , GL_STATIC_DRAW)
 
         glBindBuffer(GL_ARRAY_BUFFER,0)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0)
