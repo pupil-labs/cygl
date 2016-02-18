@@ -25,7 +25,7 @@ cdef class Named_Texture:
     cdef GLuint texture_id
     cdef bint use_yuv_shader
 
-cdef class Gl_Sphere:
+cdef class Sphere:
     cdef GLuint vertex_buffer_id
     cdef GLuint index_buffer_id
     cdef int vertex_buffer_size

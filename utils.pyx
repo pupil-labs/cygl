@@ -351,15 +351,11 @@ cpdef draw_polyline_norm(verts,float thickness=1,RGBA color=RGBA(1.,0.5,0.5,.5),
     glPopMatrix()
 
 
-cdef class Gl_Sphere:
+cdef class Sphere:
     ### OpenGL funtions for creating and drawing a sphere.
     def __cinit__(self):
         pass
-    def __init__(self):
-        pass
-
-    def create(self, resolution = 10 ):
-
+    def __init__(self,resolution=10):
         cdef int doubleRes = resolution*2
         cdef float polarInc = math.pi/resolution
         cdef float azimInc = math.pi*2.0/doubleRes
