@@ -1,7 +1,7 @@
-import os, platform
 from __future__ import print_function
-from stat import ST_MTIME
 
+import os, platform
+from stat import ST_MTIME
 
 from distutils.core import setup
 from distutils.extension import Extension
