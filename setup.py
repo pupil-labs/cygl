@@ -1,4 +1,5 @@
 import os, platform
+from __future__ import print_function
 from stat import ST_MTIME
 
 
@@ -32,9 +33,9 @@ elif platform.system() == 'Linux':
 	link_args = []
 
 if os.path.isfile('glew.pxd') and os.stat('glew.pxd')[ST_MTIME] > os.stat(glew_header)[ST_MTIME]:
-    print "'glew.pxd' is up-to-date."
+    print("'glew.pxd' is up-to-date.")
 else:
-    print "generating glew.pxd based on '%s'"%glew_header
+    print("generating glew.pxd based on '%s'"%glew_header)
     generate_pxd(glew_header)
 
 
