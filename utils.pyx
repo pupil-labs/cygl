@@ -125,8 +125,8 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
         simple_pt_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
     simple_pt_shader.bind()
-    simple_pt_shader.uniform1f('size',size)
-    simple_pt_shader.uniform1f('sharpness',sharpness)
+    simple_pt_shader.uniform1f(b'size',size)
+    simple_pt_shader.uniform1f(b'sharpness',sharpness)
     glColor4f(color.r,color.g,color.b,color.a)
     glBegin(GL_POINTS)
     for pt in points:
@@ -194,11 +194,11 @@ cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 
 
 
     simple_circle_shader.bind()
-    simple_circle_shader.uniform1f('radius', radius)
-    simple_circle_shader.uniform1f('stroke_width', stroke_width)
-    simple_circle_shader.uniformf('center_position', center_position )
-    simple_circle_shader.uniform1f('sharpness',sharpness)
-    simple_circle_shader.uniformf('color', color[:] )
+    simple_circle_shader.uniform1f(b'radius', radius)
+    simple_circle_shader.uniform1f(b'stroke_width', stroke_width)
+    simple_circle_shader.uniformf(b'center_position', center_position )
+    simple_circle_shader.uniform1f(b'sharpness',sharpness)
+    simple_circle_shader.uniformf(b'color', color[:] )
 
     glBegin(GL_QUADS)
     glTexCoord2f(0.0, 1.0)
