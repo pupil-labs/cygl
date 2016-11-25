@@ -553,7 +553,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
             }
             """
 
-        simple_yuv422_shader = shader.Shader(VERT_SHADER, FRAG_SHADER, "")
+        simple_yuv422_shader = shader.Shader(VERT_SHADER, FRAG_SHADER, b"")
 
 
     glActiveTexture(GL_TEXTURE0)
@@ -565,7 +565,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     simple_yuv422_shader.bind()
-    simple_yuv422_shader.uniform1i("yuv422_image", 0)
+    simple_yuv422_shader.uniform1i(b"yuv422_image", 0)
 
     # someday replace with this:
     # glEnableClientState(GL_VERTEX_ARRAY)
