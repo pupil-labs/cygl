@@ -5,7 +5,7 @@ Open GL cython definitions and utils. Glew.pxd files is auto generated from glew
 
 ##Dependecies:
 GLEW (OpengGL Extension Wrangler)
-* Linux: `sudo-apt-get install libglew-dev`
+* Linux: `sudo apt-get install libglew-dev`
 * MacOS: `brew install glew`
 * Win 'insert win instructions here.'
 
