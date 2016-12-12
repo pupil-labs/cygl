@@ -680,7 +680,7 @@ cpdef draw_named_texture(texture_id, interpolation=True, quad=((0.,0.),(1.,0.),(
     glDisable(GL_TEXTURE_2D)
 
 
-def draw_gl_texture(image,interpolation=True):
+def draw_gl_texture(image,interpolation=True,alpha=1.0):
     """
     We draw the image as a texture on a quad from 0,0 to img.width,img.height.
     Simple anaymos texture one time use. Look at named texture fn's for better perfomance
@@ -691,17 +691,20 @@ def draw_gl_texture(image,interpolation=True):
         height, width = image.shape
         channels = 1
         data_1 = image
-
     else:
         height, width, channels = image.shape
-        data_3 = image
+        if channels == 1:
+            data_1 = image
+        else:
+            data_3 = image
+
     gl_blend = (None,GL_LUMINANCE,None,GL_BGR,GL_BGRA)[channels]
     gl_blend_init = (None,GL_LUMINANCE,None,GL_RGB,GL_RGBA)[channels]
 
     glPixelStorei(GL_UNPACK_ALIGNMENT,1)
     glEnable(GL_TEXTURE_2D)
     # Create Texture and upload data
-    if channels ==1:
+    if channels == 1:
         glTexImage2D(GL_TEXTURE_2D,
                         0,
                         gl_blend_init,
@@ -727,7 +730,7 @@ def draw_gl_texture(image,interpolation=True):
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 
-    glColor4f(1.0,1.0,1.0,1.0)
+    glColor4f(1.0,1.0,1.0,alpha)
     # Draw textured Quad.
     glBegin(GL_QUADS)
     glTexCoord2f(0.0, 1.0)

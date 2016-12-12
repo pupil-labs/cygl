@@ -60,7 +60,7 @@ extensions = [
 
 
 setup( 	name="cygl",
-		version = "0.3",
+		version = "0.4",
 		author = 'Moritz Kassner',
 		licence = 'MIT',
 		#this package shall be called cygl
