@@ -894,14 +894,3 @@ cpdef pop_ortho():
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
 
-cdef unicode _to_unicode(object s):
-    if type(s) is unicode:
-        return <unicode>s
-    else:
-        return (<bytes>s).decode('utf-8')
-
-cdef bytes _to_utf8_bytes(object s):
-    if type(s) is unicode:
-        return (<unicode>s).encode('utf-8')
-    else:
-        return <bytes>s

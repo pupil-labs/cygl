@@ -55,7 +55,8 @@ extensions = [
 				libraries = libs,
 				library_dirs = lib_dir,
 				extra_link_args=link_args,
-				extra_compile_args=[]),
+                extra_compile_args=['-std=c++11'],
+                language="c++"),
 ]
 
 

@@ -1,5 +1,18 @@
 cimport glew as gl
-cimport utils
+
+
+cdef str _to_str(object s):
+    if type(s) is unicode:
+        return s
+    else:
+        return (<bytes>s).decode('utf-8')
+
+cdef bytes _to_utf8_bytes(object s):
+    if type(s) is unicode:
+        return (<unicode>s).encode('utf-8')
+    else:
+        return <bytes>s
+
 
 cdef class Shader:
     ''' Base shader class. '''
@@ -23,9 +36,9 @@ cdef class Shader:
         '''
 
         self.uniforms = {}
-        self._vertex_code = utils._to_utf8_bytes(vertex_code)
-        self._fragment_code = utils._to_utf8_bytes(fragment_code)
-        self._geometry_code = utils._to_utf8_bytes(geometry_code)
+        self._vertex_code = _to_utf8_bytes(vertex_code)
+        self._fragment_code = _to_utf8_bytes(fragment_code)
+        self._geometry_code = _to_utf8_bytes(geometry_code)
 
         # create the program handle
         self.handle = gl.glCreateProgram()
@@ -51,7 +64,7 @@ cdef class Shader:
         gl.glGetShaderiv(shader,gl.GL_INFO_LOG_LENGTH,&log_length)
         cdef bytearray log = bytearray(log_length)
         gl.glGetShaderInfoLog(shader, log_length, NULL, log)
-        return utils._to_unicode(log)
+        return _to_str(log)
 
 
     cdef _get_program_info(self):
@@ -123,14 +136,14 @@ cdef class Shader:
             program, so this should probably be a class method instead. '''
         gl.glUseProgram(0)
 
-    cpdef uniformf(self, unicode name, vals):
+    cpdef uniformf(self, str name, vals):
         ''' Uploads float uniform(s), program must be currently bound. '''
 
-        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, utils._to_utf8_bytes(name)))
+        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, _to_utf8_bytes(name)))
         #if loc < 0:
         #    raise ShaderException, \
         #        '''Unknow uniform location '%s' ''' % name
-        self.uniforms[name] = utils._to_utf8_bytes(loc)
+        self.uniforms[name] = _to_utf8_bytes(loc)
 
         cdef int val_len = len(vals)
 
@@ -143,28 +156,28 @@ cdef class Shader:
         elif val_len ==4:
             gl.glUniform4f(loc, vals[0],vals[1],vals[2],vals[3])
 
-    cpdef uniform1f(self, unicode name, float val):
+    cpdef uniform1f(self, str name, float val):
         ''' Upload float uniform, program must be currently bound. '''
 
-        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, utils._to_utf8_bytes(name)))
+        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, _to_utf8_bytes(name)))
         if loc < 0:
             raise Exception("Unknow uniform location '{}'".format(name))
-        self.uniforms[name] = utils._to_utf8_bytes(loc)
+        self.uniforms[name] = _to_utf8_bytes(loc)
         gl.glUniform1f(loc, val)
 
-    cpdef uniform1i(self, unicode name, int val):
+    cpdef uniform1i(self, str name, int val):
         ''' Upload integer uniform, program must be currently bound. '''
 
-        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, utils._to_utf8_bytes(name)))
+        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, _to_utf8_bytes(name)))
         if loc < 0:
             raise Exception("Unknow uniform location '{}'".format(name))
         self.uniforms[name] = loc
         gl.glUniform1i(loc, val)
 
-    cpdef uniformi(self, unicode name, vals):
+    cpdef uniformi(self, str name, vals):
         ''' Upload integer uniform(s), program must be currently bound. '''
 
-        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, utils._to_utf8_bytes(name)))
+        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle, _to_utf8_bytes(name)))
         #if loc < 0:
         #    raise ShaderException, \
         #        '''Unknow uniform location '%s' ''' % name
@@ -181,10 +194,10 @@ cdef class Shader:
             gl.glUniform4i(loc, vals[0],vals[1],vals[2],vals[3])
 
 
-    cpdef uniform_matrixf(self, unicode name, float[:] mat):
+    cpdef uniform_matrixf(self, str name, float[:] mat):
         ''' Upload uniform matrix, program must be currently bound. '''
 
-        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle,utils._to_utf8_bytes(name)))
+        loc = self.uniforms.get(name, gl.glGetUniformLocation(self.handle,_to_utf8_bytes(name)))
         #if loc < 0:
         #    raise ShaderException, \
         #        '''Unknow uniform location '%s' ''' % name
@@ -196,18 +209,18 @@ cdef class Shader:
 
     def get_vertex_code(self, lineno=True):
         code = ''
-        for lineno, line in enumerate(utils._to_unicode(self._vertex_code).split('\n')):
+        for lineno, line in enumerate(_to_str(self._vertex_code).split('\n')):
             code += '{:3d}: {}\n'.format(lineno+1, line)
         return code
 
     def get_fragment_code(self,lineno=True):
         code = ''
-        for lineno,line in enumerate(utils._to_unicode(self._fragment_code).split('\n')):
+        for lineno,line in enumerate(_to_str(self._fragment_code).split('\n')):
             code += '{:3d}: {}\n'.format(lineno+1, line)
         return code
 
     def get_geometry_code(self,lineno=True):
         code = ''
-        for lineno,line in enumerate(utils._to_unicode(self._geometry_code).split('\n')):
+        for lineno,line in enumerate(_to_str(self._geometry_code).split('\n')):
             code += '{:3d}: {}\n'.format(lineno+1, line)
         return code
