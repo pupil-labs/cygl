@@ -68,7 +68,7 @@ cdef init_basic_shader():
     global basic_shader # we cache the shader because we only create it the first time we call this fn.
     if not basic_shader:
 
-        VERT_SHADER = b"""
+        VERT_SHADER = """
         #version 120
         attribute vec3 vertex;
 
@@ -77,7 +77,7 @@ cdef init_basic_shader():
                }
         """
 
-        FRAG_SHADER = b"""
+        FRAG_SHADER = """
         #version 120
         uniform vec4 color;
         void main()
@@ -86,7 +86,7 @@ cdef init_basic_shader():
         }
         """
 
-        GEOM_SHADER = b""""""
+        GEOM_SHADER = """"""
         #shader link and compile
         basic_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
@@ -95,7 +95,7 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
     global simple_pt_shader # we cache the shader because we only create it the first time we call this fn.
     if not simple_pt_shader:
 
-        VERT_SHADER = b"""
+        VERT_SHADER = """
         #version 120
         varying vec4 f_color;
         uniform float size = 20;
@@ -108,7 +108,7 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
                }
         """
 
-        FRAG_SHADER = b"""
+        FRAG_SHADER = """
         #version 120
         varying vec4 f_color;
         uniform float size = 20;
@@ -120,13 +120,13 @@ cpdef draw_points(points,float size=20,RGBA color=RGBA(1.,0.5,0.5,.5),float shar
         }
         """
 
-        GEOM_SHADER = b""""""
+        GEOM_SHADER = """"""
         #shader link and compile
         simple_pt_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
     simple_pt_shader.bind()
-    simple_pt_shader.uniform1f(b'size',size)
-    simple_pt_shader.uniform1f(b'sharpness',sharpness)
+    simple_pt_shader.uniform1f('size',size)
+    simple_pt_shader.uniform1f('sharpness',sharpness)
     glColor4f(color.r,color.g,color.b,color.a)
     glBegin(GL_POINTS)
     for pt in points:
@@ -146,7 +146,7 @@ cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 
     global simple_circle_shader
 
     if not simple_circle_shader:
-        VERT_SHADER = b"""
+        VERT_SHADER = """
         #version 120
 
         uniform vec2 center_position; // position in screen coordinates
@@ -163,7 +163,7 @@ cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 
                }
         """
 
-        FRAG_SHADER = b"""
+        FRAG_SHADER = """
         #version 120
         uniform vec4 color;
         uniform float radius;
@@ -187,18 +187,18 @@ cpdef draw_circle( center_position = (0,0) ,float radius=20,float stroke_width= 
         }
         """
 
-        GEOM_SHADER = b""""""
+        GEOM_SHADER = """"""
         #shader link and compile
         simple_circle_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
 
 
     simple_circle_shader.bind()
-    simple_circle_shader.uniform1f(b'radius', radius)
-    simple_circle_shader.uniform1f(b'stroke_width', stroke_width)
-    simple_circle_shader.uniformf(b'center_position', center_position )
-    simple_circle_shader.uniform1f(b'sharpness',sharpness)
-    simple_circle_shader.uniformf(b'color', color[:] )
+    simple_circle_shader.uniform1f('radius', radius)
+    simple_circle_shader.uniform1f('stroke_width', stroke_width)
+    simple_circle_shader.uniformf('center_position', center_position )
+    simple_circle_shader.uniform1f('sharpness',sharpness)
+    simple_circle_shader.uniformf('color', color[:] )
 
     glBegin(GL_QUADS)
     glTexCoord2f(0.0, 1.0)
@@ -221,7 +221,7 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
     global simple_concentric_circle_shader
 
     if not simple_concentric_circle_shader:
-        VERT_SHADER = b"""
+        VERT_SHADER = """
         #version 120
 
         uniform vec2 center_position; // position in screen coordinates
@@ -237,7 +237,7 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
                }
         """
 
-        FRAG_SHADER = b"""
+        FRAG_SHADER = """
         #version 120
 
         uniform float alpha = 1;
@@ -275,17 +275,17 @@ cpdef draw_concentric_circles( center_position = (0,0), radius = 10 , circle_cou
         }
         """
 
-        GEOM_SHADER = b""""""
+        GEOM_SHADER = """"""
         #shader link and compile
         simple_concentric_circle_shader = shader.Shader(VERT_SHADER,FRAG_SHADER,GEOM_SHADER)
 
 
 
     simple_concentric_circle_shader.bind()
-    simple_concentric_circle_shader.uniform1f(b'alpha', alpha)
-    simple_concentric_circle_shader.uniform1f(b'radius', radius)
-    simple_concentric_circle_shader.uniform1i(b'circle_count', circle_count)
-    simple_concentric_circle_shader.uniformf(b'center_position', center_position )
+    simple_concentric_circle_shader.uniform1f('alpha', alpha)
+    simple_concentric_circle_shader.uniform1f('radius', radius)
+    simple_concentric_circle_shader.uniform1i('circle_count', circle_count)
+    simple_concentric_circle_shader.uniformf('center_position', center_position )
 
     glBegin(GL_QUADS)
     glTexCoord2f(0.0, 1.0)
@@ -400,9 +400,9 @@ cdef class Sphere:
 
     def draw(self, color = RGBA(0.5,0.5,0,0.5), primitive_type = GL_LINE_STRIP):
         basic_shader.bind()
-        basic_shader.uniformf(b'color', color[:] )
+        basic_shader.uniformf('color', color[:] )
 
-        glBindAttribLocation(basic_shader.handle , 0 , b'vertex')
+        glBindAttribLocation(basic_shader.handle , 0 , 'vertex')
 
         glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer_id)
         glEnableVertexAttribArray(0)
@@ -498,7 +498,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
     global simple_yuv422_shader
     if not simple_yuv422_shader:
 
-        VERT_SHADER = b"""
+        VERT_SHADER = """
             #version 120
 
             void main () {
@@ -507,7 +507,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
             }
             """
 
-        FRAG_SHADER = b"""
+        FRAG_SHADER = """
             #version 120
 
             // texture sampler of the YUV422 image
@@ -553,7 +553,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
             }
             """
 
-        simple_yuv422_shader = shader.Shader(VERT_SHADER, FRAG_SHADER, b"")
+        simple_yuv422_shader = shader.Shader(VERT_SHADER, FRAG_SHADER, "")
 
 
     glActiveTexture(GL_TEXTURE0)
@@ -565,7 +565,7 @@ cpdef draw_named_texture_yuv422(texture_id , interpolation=True, quad=((0.,0.),(
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     simple_yuv422_shader.bind()
-    simple_yuv422_shader.uniform1i(b"yuv422_image", 0)
+    simple_yuv422_shader.uniform1i("yuv422_image", 0)
 
     # someday replace with this:
     # glEnableClientState(GL_VERTEX_ARRAY)
@@ -893,3 +893,4 @@ cpdef pop_ortho():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
+
