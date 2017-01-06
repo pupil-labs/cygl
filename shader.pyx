@@ -1,11 +1,17 @@
 cimport glew as gl
-
+from cpython.version cimport PY_MAJOR_VERSION
 
 cdef str _to_str(object s):
-    if type(s) is unicode:
-        return s
+    if PY_MAJOR_VERSION > 2:
+        if type(s) is unicode:
+            return s
+        else:
+            return (<bytes>s).decode('utf-8')
     else:
-        return (<bytes>s).decode('utf-8')
+        if type(s) is unicode:
+            return s.encode('utf-8')
+        else:
+            return str(s)
 
 cdef bytes _to_utf8_bytes(object s):
     if type(s) is unicode:
