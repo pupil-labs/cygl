@@ -433,18 +433,6 @@ cdef class Named_Texture:
     def __init__(self):
         self.texture_id = create_named_texture()
 
-    def update_from_frame(self,frame):
-        '''
-        update texture from a pupil "Frame" instance.
-        '''
-        yuv_buffer = frame.yuv_buffer
-        if yuv_buffer is not None:
-            update_named_texture_yuv422(self.texture_id,yuv_buffer,frame.width,frame.height)
-            self.use_yuv_shader = True
-        else:
-           update_named_texture(self.texture_id,frame.bgr)
-           self.use_yuv_shader = False
-
     def update_from_ndarray(self,img):
         update_named_texture(self.texture_id,img)
         self.use_yuv_shader = False
