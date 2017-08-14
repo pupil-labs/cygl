@@ -140,9 +140,11 @@ cdef extern from "include_glew.h":
     ctypedef unsigned int GLhandleARB
     ctypedef ptrdiff_t GLintptrARB
     ctypedef ptrdiff_t GLsizeiptrARB
+    ctypedef void* GLeglClientBufferEXT
     ctypedef unsigned short GLhalf
     ctypedef GLintptr GLvdpauSurfaceNV
     ctypedef long GLVULKANPROCNV
+    
 
     ctypedef void (__stdcall *GLDEBUGPROCAMD)(GLuint id, GLenum category, GLenum severity, GLsizei length, GLchar *message, GLvoid *userParam)
     ctypedef void (__stdcall *GLDEBUGPROCARB)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar *message, GLvoid *userParam)
